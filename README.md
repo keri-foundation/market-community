@@ -1,4 +1,4 @@
-# market-community
+# market-community advisory group
 Home of the bi-weekly broader KERI Market and community meeting
 
 ## Wiki
