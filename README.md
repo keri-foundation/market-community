@@ -1,5 +1,5 @@
 # market-community advisory group
-Home of the bi-weekly broader KERI Market and community meeting
+Home of the four-weekly broader KERI Market and community meeting
 
 ## Wiki
 We will use this repo as a wiki and for issue-handling
