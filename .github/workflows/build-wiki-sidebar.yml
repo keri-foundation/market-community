@@ -1,0 +1,64 @@
+name: Build wiki sidebar
+
+on:
+  workflow_dispatch:
+  gollum:
+  schedule:
+    - cron: "17 2 * * *"  # nightly at 02:17 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo (for context)
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure git author
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Clone wiki repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" wiki
+          cd wiki
+          git status
+
+      - name: Write build-sidebar.mjs
+        run: |
+          cat > wiki/build-sidebar.mjs <<'EOF'
+          // ---- begin script ----
+          import fs from "fs";
+          import path from "path";
+          /* paste the full build-sidebar.mjs contents here */
+          // ---- end script ----
+          EOF
+
+      - name: Run builder
+        run: |
+          cd wiki
+          node build-sidebar.mjs
+          echo "=== Diff ==="
+          git diff -- _Sidebar.md || true
+
+      - name: Commit & push if changed
+        run: |
+          cd wiki
+          if ! git diff --quiet -- _Sidebar.md; then
+            git add _Sidebar.md
+            git commit -m "chore(wiki): auto-build _Sidebar.md"
+            git push origin HEAD
+          else
+            echo "No sidebar changes to commit."
+          fi
